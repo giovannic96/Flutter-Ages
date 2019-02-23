@@ -1,4 +1,4 @@
-# ages
+# Ages
 
 An app showing the ages of the people.
 
