@@ -27,8 +27,7 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
   AnimationController _animationController;
 
   /* Colors */
-  //final Color _oddItemColor = Colors.grey[300];
-  final Color _oddItemColor = Colors.lightBlue;
+  final Color _oddItemColor = Colors.grey[300];
   final Color _evenItemColor = Colors.grey[200];
 
   @override
