@@ -22,10 +22,6 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
   final List<AgesItem> _itemList = <AgesItem>[];
   final int _itemPerPage = 8;
 
-  /* Colors */
-  final Color _oddItemColor = Colors.grey[300];
-  final Color _evenItemColor = Colors.grey[200];
-
   @override
   void initState() {
     _scrollController.addListener(scrollListener);
