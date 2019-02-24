@@ -22,17 +22,12 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
   final List<AgesItem> _itemList = <AgesItem>[];
   final int _itemPerPage = 8;
 
-  /* Animation */
-  bool isOpened = false;
-  AnimationController _animationController;
-
   /* Colors */
   final Color _oddItemColor = Colors.grey[300];
   final Color _evenItemColor = Colors.grey[200];
 
   @override
   void initState() {
-    _initAnimation();
     _scrollController.addListener(scrollListener);
     super.initState();
     _readAgesList(); // read all items from db
@@ -40,7 +35,6 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
 
   @override 
   void dispose() {
-    _animationController.dispose();
     _textEditingController.dispose();
     _scrollController.removeListener(scrollListener);
     super.dispose();
@@ -52,22 +46,6 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
     else
       _showFloatingBtn = false;
     setState(() {});
-  }
-
-  _initAnimation() {
-    _animationController = AnimationController(vsync: this, duration: Duration(milliseconds: 400))
-          ..addListener(() {
-            setState(() {});
-          });
-  }
-
-  _animate() {
-    if (!isOpened) {
-      _animationController.forward();
-    } else {
-      _animationController.reverse();
-    }
-    isOpened = !isOpened;
   }
 
   void _handleSubmitted(String text, DateTime birthDate) async { 
@@ -89,8 +67,7 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    return new WillPopScope(
-      child: new Scaffold(
+      return new Scaffold(
       backgroundColor: _evenItemColor,
       body: new Column(
         children: <Widget>[
@@ -176,17 +153,9 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
               title: new Icon(Icons.add),
             ),
           onPressed: () {
-            _animate();
             _showFormDialog();
           },
       ) : Container(),
-      
-    ),
-    onWillPop: () {
-      
-      if(isOpened) _animate();
-      return new Future(() => false);
-    },
     );
   }
 
@@ -226,7 +195,6 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
             onPressed: () {
               Navigator.pop(context);
               _textEditingController.clear();
-              _animate();
             },
             child: Text("Annulla")),
         new FlatButton(
@@ -235,7 +203,6 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
               print(nameItem);
               _handleSubmitted(_textEditingController.text, _birthDate);
               _textEditingController.clear();
-              _animate();
               Navigator.pop(context);
               Scaffold.of(context).showSnackBar(new SnackBar(
                 content: new Text("'$nameItem' aggiunto alla lista."), 
