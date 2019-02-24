@@ -10,7 +10,7 @@ class AgesScreen extends StatefulWidget {
   _AgesScreenState createState() => _AgesScreenState();
 }
 
-class _AgesScreenState extends State<AgesScreen> {
+class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateMixin {
 
   final TextEditingController _textEditingController = new TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -22,12 +22,17 @@ class _AgesScreenState extends State<AgesScreen> {
   final List<AgesItem> _itemList = <AgesItem>[];
   final int _itemPerPage = 8;
 
+  /* Animation */
+  bool isOpened = false;
+  AnimationController _animationController;
+
   /* Colors */
   final Color _oddItemColor = Colors.grey[300];
   final Color _evenItemColor = Colors.grey[200];
 
   @override
   void initState() {
+    _initAnimation();
     _scrollController.addListener(scrollListener);
     super.initState();
     _readAgesList(); // read all items from db
@@ -35,6 +40,7 @@ class _AgesScreenState extends State<AgesScreen> {
 
   @override 
   void dispose() {
+    _animationController.dispose();
     _textEditingController.dispose();
     _scrollController.removeListener(scrollListener);
     super.dispose();
@@ -48,7 +54,23 @@ class _AgesScreenState extends State<AgesScreen> {
     setState(() {});
   }
 
-  void _handleSubmitted(String text, DateTime birthDate) async { // 'async' because we're dealing with database
+  _initAnimation() {
+    _animationController = AnimationController(vsync: this, duration: Duration(milliseconds: 400))
+          ..addListener(() {
+            setState(() {});
+          });
+  }
+
+  _animate() {
+    if (!isOpened) {
+      _animationController.forward();
+    } else {
+      _animationController.reverse();
+    }
+    isOpened = !isOpened;
+  }
+
+  void _handleSubmitted(String text, DateTime birthDate) async { 
 
     _textEditingController.clear(); // clear text
     AgesItem agesItem = new AgesItem(text, dateFormatted(), dateBirthFormatted(birthDate)); // create item
@@ -67,7 +89,8 @@ class _AgesScreenState extends State<AgesScreen> {
 
   @override
   Widget build(BuildContext context) {
-      return new Scaffold(
+    return new WillPopScope(
+      child: new Scaffold(
       backgroundColor: _evenItemColor,
       body: new Column(
         children: <Widget>[
@@ -153,14 +176,17 @@ class _AgesScreenState extends State<AgesScreen> {
               title: new Icon(Icons.add),
             ),
           onPressed: () {
+            _animate();
             _showFormDialog();
           },
-          /*
-          child: AnimatedIcon(
-                  icon: AnimatedIcons.add_event,
-                  progress: _animateIcon,
-          ),*/
       ) : Container(),
+      
+    ),
+    onWillPop: () {
+      
+      if(isOpened) _animate();
+      return new Future(() => false);
+    },
     );
   }
 
@@ -200,6 +226,7 @@ class _AgesScreenState extends State<AgesScreen> {
             onPressed: () {
               Navigator.pop(context);
               _textEditingController.clear();
+              _animate();
             },
             child: Text("Annulla")),
         new FlatButton(
@@ -208,6 +235,7 @@ class _AgesScreenState extends State<AgesScreen> {
               print(nameItem);
               _handleSubmitted(_textEditingController.text, _birthDate);
               _textEditingController.clear();
+              _animate();
               Navigator.pop(context);
               Scaffold.of(context).showSnackBar(new SnackBar(
                 content: new Text("'$nameItem' aggiunto alla lista."), 
