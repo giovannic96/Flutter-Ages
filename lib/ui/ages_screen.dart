@@ -4,6 +4,7 @@ import 'package:ages/util/formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:ages/ui/my_form_dialog.dart';
 
 class AgesScreen extends StatefulWidget {
   @override
@@ -48,12 +49,12 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
     setState(() {});
   }
 
-  void _handleSubmitted(String text, DateTime birthDate) async { 
+  void _undo(String text, DateTime birthDate) async { 
 
-    _textEditingController.clear(); // clear text
     AgesItem agesItem = new AgesItem(text, dateFormatted(), dateBirthFormatted(birthDate)); // create item
     int savedItemId = await db.saveItem(agesItem); // retrieve itemId
-
+    int prova = await db.getCount();
+    print("Elementi nel db: $prova");
     AgesItem addedItem = await db.getItem(savedItemId); // get item by its id from the db
 
     setState(() {   // in order to change the state of the widget by showing the list view
@@ -88,20 +89,7 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
                     controller: _slidableController,
                     delegate: new SlidableScrollDelegate(),
                     slideToDismissDelegate: new SlideToDismissDrawerDelegate(
-                      onDismissed: (actionType) {
-                        // Save old item variables in case of 'undo'
-                          var oldName = _itemList[index].itemName;
-                          var oldDateBirth = _itemList[index].dateBirth;
-
-                          _deleteItem(_itemList[index].id, index);
-                          Scaffold.of(context).showSnackBar(new SnackBar(
-                            content: new Text("'${_itemList[index].itemName}' rimosso dalla lista."), 
-                            action: SnackBarAction(
-                              label: 'Annulla',
-                              onPressed: () => _handleSubmitted(oldName, DateTime.parse(oldDateBirth))
-                            ),
-                          ),);
-                      }
+                      //onDismissed: (actionType) {}
                     ),
                     actionExtentRatio: 0.25,
                     child: new Material( // 'Material' not 'Container' to preserve the splash effect when hit this ListTile
@@ -134,7 +122,7 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
                             content: new Text("'${_itemList[index].itemName}' rimosso dalla lista."), 
                             action: SnackBarAction(
                               label: 'Annulla',
-                              onPressed: () => _handleSubmitted(oldName, DateTime.parse(oldDateBirth))
+                              onPressed: () => _undo(oldName, DateTime.parse(oldDateBirth))
                             ),
                           ),);
                         },
@@ -160,64 +148,23 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
   }
 
   void _showFormDialog() {
-    var alert = new AlertDialog(
-      title: new Text("Inserisci dati"),
-      content: new Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          new SizedBox(
-            height: 20.0,
-          ),
-          new TextField(
-            controller: _textEditingController,
-            decoration: new InputDecoration(
-                suffixIcon: new Icon(Icons.person_add),
-                labelText: "Nome",
-                //hintText: "Inserisci nome",
-            ),
-          ),
-          new SizedBox(
-            height: 20.0,
-          ),
-          new TextField(
-            decoration: new InputDecoration(
-                suffixIcon: new Icon(Icons.date_range),
-                labelText: "Data di nascita",
-                //hintText: this._birthDate.year.toString(),
-            ),
-            onTap: () {_setBirthDate(context);},
-          ),
-          ],
-        ),
-      actions: <Widget>[
-        new FlatButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _textEditingController.clear();
-            },
-            child: Text("Annulla")),
-        new FlatButton(
-            onPressed: () {
-              var nameItem = _textEditingController.text;
-              print(nameItem);
-              _handleSubmitted(_textEditingController.text, _birthDate);
-              _textEditingController.clear();
-              Navigator.pop(context);
-              Scaffold.of(context).showSnackBar(new SnackBar(
-                content: new Text("'$nameItem' aggiunto alla lista."), 
-              ),);
-            },
-            child: Text("Salva")
-        ),
-      ],
-      );
-      showDialog(
-          context: context,
-          builder: (_) {
-            return alert;
+    
+    showDialog(
+      context: context,
+      builder: (_) {
+        return MyFormDialog();
+      }).then((result) =>
+        setState(() {  
+          _itemList.insert(0, result);
+          _itemList.sort((a, b) {
+            return a.itemName.toLowerCase().compareTo(b.itemName.toLowerCase());
           });
-      }
+          Scaffold.of(context).showSnackBar(new SnackBar(
+            content: new Text("${result.itemName} aggiunto alla lista."), 
+          ),);
+      })
+      );
+  }
             
   _readAgesList() async {
     List items = await db.getItems();
@@ -324,22 +271,5 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
         return a.itemName.toLowerCase().compareTo(b.itemName.toLowerCase());
       });
     });
-  }
-
-  Future<Null> _setBirthDate(BuildContext context) async {
-    final DateTime picked = await showDatePicker(
-      context: context,
-      locale: Localizations.localeOf(context),
-      initialDate: new DateTime.now(),
-      firstDate: new DateTime(1900),
-      lastDate: new DateTime.now()
-    );
-
-    if(picked != null) {
-      print("Date selected: ${picked.toString()}");
-      setState(() {
-        _birthDate = picked;
-      });
-    }
   }
 }

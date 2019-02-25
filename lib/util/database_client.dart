@@ -31,7 +31,7 @@ class DatabaseHelper {
 
   initDb() async {
     Directory documentDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentDirectory.path, "ages_db9.db");
+    String path = join(documentDirectory.path, "ages_db10.db");
     //print("Path della directory: " + path);
     var ourDb = await openDatabase(path, version: 1, onCreate: _onCreate);
     return ourDb;
@@ -48,7 +48,6 @@ class DatabaseHelper {
   Future<int> saveItem(AgesItem item) async {
     var dbClient = await db;
     int res = await dbClient.insert("$tableName", item.toMap()); // return the id of the item
-    print(res.toString());
     return res;
   }
 
