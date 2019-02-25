@@ -4,7 +4,7 @@ import 'package:ages/util/formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:ages/ui/my_form_dialog.dart';
+import 'package:ages/ui/form_insert_dialog.dart';
 import 'package:ages/ui/form_update_dialog.dart';
 
 class AgesScreen extends StatefulWidget {
