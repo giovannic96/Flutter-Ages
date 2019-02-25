@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:ages/ui/my_form_dialog.dart';
+import 'package:ages/ui/form_update_dialog.dart';
 
 class AgesScreen extends StatefulWidget {
   @override
@@ -18,7 +19,6 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
   final SlidableController _slidableController = new SlidableController();
 
   bool _showFloatingBtn = true;
-  DateTime _birthDate;
   var db = new DatabaseHelper();
   final List<AgesItem> _itemList = <AgesItem>[];
   final int _itemPerPage = 8;
@@ -53,8 +53,7 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
 
     AgesItem agesItem = new AgesItem(text, dateFormatted(), dateBirthFormatted(birthDate)); // create item
     int savedItemId = await db.saveItem(agesItem); // retrieve itemId
-    int prova = await db.getCount();
-    print("Elementi nel db: $prova");
+   
     AgesItem addedItem = await db.getItem(savedItemId); // get item by its id from the db
 
     setState(() {   // in order to change the state of the widget by showing the list view
@@ -140,14 +139,14 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
             child: new ListTile(
               title: new Icon(Icons.add),
             ),
-          onPressed: () {
-            _showFormDialog();
-          },
+          onPressed: () =>
+            _showFormDialog()
+          ,
       ) : Container(),
     );
   }
 
-  void _showFormDialog() {
+  _showFormDialog() {
     
     showDialog(
       context: context,
@@ -155,17 +154,58 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
         return MyFormDialog();
       }).then((result) =>
         setState(() {  
-          _itemList.insert(0, result);
-          _itemList.sort((a, b) {
-            return a.itemName.toLowerCase().compareTo(b.itemName.toLowerCase());
-          });
-          Scaffold.of(context).showSnackBar(new SnackBar(
-            content: new Text("${result.itemName} aggiunto alla lista."), 
-          ),);
+          if(result != null) { // because we can tap outside form dialog and in this case result will be null
+            _itemList.insert(0, result);
+            _itemList.sort((a, b) {
+              return a.itemName.toLowerCase().compareTo(b.itemName.toLowerCase());
+            });
+            Scaffold.of(context).showSnackBar(new SnackBar(
+              content: new Text("${result.itemName} aggiunto alla lista."), 
+            ),);
+          }
       })
       );
   }
-            
+
+  _updateItem(AgesItem item, int index) {
+    
+    showDialog(
+      context: context,
+      builder: (_) {
+        return FormUpdateDialog();
+      }).then((result) async {
+        if(result != null) { // because we can tap outside form dialog and in this case result will be null
+          AgesItem newItemUpdated = AgesItem.fromMap(
+            {
+              "itemName": result[0], //result.text
+              "dateCreated": dateFormatted(),
+              "dateBirth": dateBirthFormatted(result[1]), //result.birthdate 
+              "id": item.id,
+              "avatarColor": item.avatarColor
+            });
+
+          setState(() {
+            _itemList.removeWhere((element) {
+            _itemList[index].itemName == item.itemName; // remove old item (the one we'are updating) from the list
+            });
+            _itemList.sort((a, b) {
+              return a.itemName.toLowerCase().compareTo(b.itemName.toLowerCase());
+            });
+          });
+
+          await db.updateItem(newItemUpdated); // update our db with the new values
+          
+          setState(() {
+            _readAgesList(); // redraw again the screen with all items saved (updated) in the db
+            Scaffold.of(context).showSnackBar(new SnackBar(
+              content: new Text("${newItemUpdated.itemName} modificato con successo."), 
+            ),);
+          });
+        }
+      }
+      );
+  }
+
   _readAgesList() async {
     List items = await db.getItems();
     items.forEach((item) {
@@ -184,89 +224,6 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
     await db.deleteItem(id);
     setState(() { // refresh list view
       _itemList.removeAt(index);
-      _itemList.sort((a, b) {
-        return a.itemName.toLowerCase().compareTo(b.itemName.toLowerCase());
-      });
-    });
-  }
-
-  _updateItem(AgesItem item, int index) {
-    var alert = new AlertDialog(
-      title: new Text("Modifica dati"),
-      content: new Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          new SizedBox(
-            height: 20.0,
-          ),
-          new TextField(
-            controller: _textEditingController,
-            decoration: new InputDecoration(
-                suffixIcon: new Icon(Icons.person_add),
-                labelText: "Nome",
-                //hintText: "Inserisci nome",
-            ),
-          ),
-          new SizedBox(
-            height: 20.0,
-          ),
-          new TextField(
-            decoration: new InputDecoration(
-                suffixIcon: new Icon(Icons.date_range),
-                labelText: "Data di nascita",
-                //hintText: this._birthDate.year.toString(),
-            ),
-            onTap: () {_setBirthDate(context);},
-          ),
-        ],
-      ),
-      actions: <Widget>[
-        new FlatButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _textEditingController.clear();
-            },
-            child: new Text("Annulla")),
-        new FlatButton(
-            onPressed: () async {
-              AgesItem newItemUpdated = AgesItem.fromMap(
-                  {
-                    "itemName": _textEditingController.text,
-                    "dateCreated": dateFormatted(),
-                    "dateBirth": dateBirthFormatted(_birthDate),
-                    "id": item.id,
-                    "avatarColor": item.avatarColor
-                  });
-
-              _handleSubmittedUpdate(index, item); // remove old item from the view (redraw the screen)
-              await db.updateItem(newItemUpdated); // update our db with the new values
-              setState(() {
-                _readAgesList(); // redraw again the screen with all items saved (updated) in the db
-              });
-              Navigator.pop(context);
-              Scaffold.of(context).showSnackBar(new SnackBar(
-                        content: new Text("'${item.itemName}' modificato con successo."), 
-                      ),);
-            },
-            child: new Text("Salva")
-        ),
-      ],
-    );
-    showDialog(
-        context: context,
-        builder: (_) {
-          return alert;
-        }
-    );
-  }
-
-  void _handleSubmittedUpdate(int index, AgesItem item) {
-    _textEditingController.clear();
-    setState(() {
-      _itemList.removeWhere((element) {
-        _itemList[index].itemName == item.itemName; // remove old item (the one we'are updating) from the list
-      });
       _itemList.sort((a, b) {
         return a.itemName.toLowerCase().compareTo(b.itemName.toLowerCase());
       });
