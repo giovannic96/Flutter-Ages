@@ -95,11 +95,10 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
                       color: index % 2 == 0 ?_evenItemColor : _oddItemColor,
                       child: ListTile(
                         contentPadding: EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
-                        //contentPadding: EdgeInsets.all(10),
                         title: _itemList[index],
                         leading: CircleAvatar(
                           maxRadius: 20,
-                          child: Text(firstTwoLetters(_itemList[index].itemName)),
+                          child: Text(firstLastLetters(_itemList[index].itemName)),
                           backgroundColor: hexToColor(_itemList[index].avatarColor),
                           foregroundColor: Colors.white,
                         ),
@@ -151,7 +150,7 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
     showDialog(
       context: context,
       builder: (_) {
-        return MyFormDialog();
+        return FormInsertDialog();
       }).then((result) =>
         setState(() {  
           if(result != null) { // because we can tap outside form dialog and in this case result will be null

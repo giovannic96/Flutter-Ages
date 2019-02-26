@@ -29,8 +29,8 @@ String stringToHex(String colorStr)  {
 }
 
 /* STRING FORMATTER */
-String firstTwoLetters(String str) {
+String firstLastLetters(String str) {
   List<String> splitted = str.split(" ");
-  return splitted.length == 1 ? splitted[0][0].toUpperCase() : splitted[0][0].toUpperCase() + splitted[1][0].toUpperCase();
+  return splitted.length == 1 ? splitted[0][0].toUpperCase() : splitted[0][0].toUpperCase() + splitted[splitted.length-1][0].toUpperCase();
 }
 
