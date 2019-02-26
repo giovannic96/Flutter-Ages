@@ -1,6 +1,6 @@
 # Ages
 
-An app that shows the ages of the people you insert.
+An app that shows the age of the people you insert.
 
 ## Getting Started
 
