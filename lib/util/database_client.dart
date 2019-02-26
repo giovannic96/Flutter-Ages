@@ -31,7 +31,7 @@ class DatabaseHelper {
 
   initDb() async {
     Directory documentDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentDirectory.path, "ages_db10.db");
+    String path = join(documentDirectory.path, "ages_db14.db");
     //print("Path della directory: " + path);
     var ourDb = await openDatabase(path, version: 1, onCreate: _onCreate);
     return ourDb;

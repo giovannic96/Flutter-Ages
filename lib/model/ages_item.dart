@@ -77,6 +77,7 @@ class AgesItem extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 child: Text(_itemName,
+                  overflow: TextOverflow.ellipsis,
                   style: new TextStyle( 
                   color: Colors.black87,
                   fontSize: 22.5, 

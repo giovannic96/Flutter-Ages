@@ -15,8 +15,32 @@ class _FormInsertDialogState extends State<FormInsertDialog> {
 
   final TextEditingController _textEditingCtrl = new TextEditingController();
   var db = new DatabaseHelper();
+  
+  bool _validateName = false;
+  bool _validateDate = false;
+
   DateTime _birthDate;
   AgesItem _addedItem;
+
+  void _displayErrorMessage() {
+   showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: new Text("Errore"),
+          content: new Text("Inserire Data di nascita"),
+          actions: <Widget>[
+            new FlatButton(
+              child: new Text("Ok"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Future<AgesItem> _handleSubmitted(String text, DateTime birthDate) async { 
     _textEditingCtrl.clear(); // clear text
@@ -61,11 +85,15 @@ class _FormInsertDialogState extends State<FormInsertDialog> {
           ),
           new TextField(
             autofocus: false,
+            autocorrect: false,
             controller: _textEditingCtrl,
             decoration: new InputDecoration(
               suffixIcon: new Icon(Icons.person_add),
               labelText: "Nome",
+              errorText: _validateName ? "Inserire un nome valido" : null,
+              counterText: ""
             ),
+            maxLength: 40,
           ),
           new SizedBox(
             height: 20.0,
@@ -104,11 +132,23 @@ class _FormInsertDialogState extends State<FormInsertDialog> {
             },
             child: Text("Annulla")),
         new FlatButton(
-            onPressed: () async {
+          onPressed: () async {
               var nameItem = _textEditingCtrl.text;
-              await _handleSubmitted(nameItem, _birthDate);
-              _textEditingCtrl.clear();
-              Navigator.pop(context, _addedItem);
+              nameItem = nameItem.replaceFirst(new RegExp(r"^\s+"), "");  // trims leading whitespace
+              nameItem = nameItem.replaceFirst(new RegExp(r"\s+$"), "");  // trims trailing whitespace
+              setState(() {
+                nameItem.isEmpty ? _validateName = true : _validateName = false;
+                this._birthDate == null ? _validateDate = true :_validateDate = false;
+              });
+              if (!_validateName) {
+                if(!_validateDate) {
+                  await _handleSubmitted(nameItem, _birthDate);
+                  _textEditingCtrl.clear();
+                  Navigator.pop(context, _addedItem);
+                } else {                  
+                  _displayErrorMessage();
+                }
+              } 
             },
             child: Text("Salva")
         ),
