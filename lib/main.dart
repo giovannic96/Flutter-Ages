@@ -1,5 +1,6 @@
 import 'package:ages/ui/home.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() => runApp(MyApp());
@@ -8,6 +9,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.portraitUp, 
+    ]);
     return new MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Ages',
