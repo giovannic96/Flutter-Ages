@@ -68,6 +68,7 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
       return new Scaffold(
+      resizeToAvoidBottomPadding: false,
       backgroundColor: _evenItemColor,
       body: new Column(
         children: <Widget>[
