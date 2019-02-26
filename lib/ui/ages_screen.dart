@@ -122,6 +122,7 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
                               label: 'Annulla',
                               onPressed: () => _undo(oldName, DateTime.parse(oldDateBirth))
                             ),
+                            duration: const Duration(seconds: 2),
                           ),);
                         },
                       ),
@@ -160,6 +161,7 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
             });
             Scaffold.of(context).showSnackBar(new SnackBar(
               content: new Text("${result.itemName} aggiunto alla lista."), 
+              duration: const Duration(seconds: 2),
             ),);
           }
       })
@@ -198,6 +200,7 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
             _readAgesList(); // redraw again the screen with all items saved (updated) in the db
             Scaffold.of(context).showSnackBar(new SnackBar(
               content: new Text("${newItemUpdated.itemName} modificato con successo."), 
+              duration: const Duration(seconds: 2),
             ),);
           });
         }
