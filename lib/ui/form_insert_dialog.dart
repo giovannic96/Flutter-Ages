@@ -55,6 +55,8 @@ class _FormInsertDialogState extends State<FormInsertDialog> {
   }
 
   Future<Null> _setBirthDate(BuildContext context) async {
+
+    await Future.delayed(Duration(milliseconds: 70)); // to solve issue "RenderFlex overflowed by X pixels on the bottom"
     final DateTime picked = await showDatePicker(
       context: context,
       locale: Localizations.localeOf(context),
