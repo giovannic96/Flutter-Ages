@@ -117,6 +117,7 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
                           var oldDateBirth = _itemList[index].dateBirth;
 
                           _deleteItem(_itemList[index].id, index);
+                          Scaffold.of(context).removeCurrentSnackBar();
                           Scaffold.of(context).showSnackBar(new SnackBar(
                             content: new Text("'${_itemList[index].itemName}' rimosso dalla lista."), 
                             action: SnackBarAction(
@@ -160,6 +161,7 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
             _itemList.sort((a, b) {
               return a.itemName.toLowerCase().compareTo(b.itemName.toLowerCase());
             });
+            Scaffold.of(context).removeCurrentSnackBar();
             Scaffold.of(context).showSnackBar(new SnackBar(
               content: new Text("${result.itemName} aggiunto alla lista."), 
               duration: const Duration(seconds: 2),
@@ -199,6 +201,7 @@ class _AgesScreenState extends State<AgesScreen> with SingleTickerProviderStateM
           
           setState(() {
             _readAgesList(); // redraw again the screen with all items saved (updated) in the db
+            Scaffold.of(context).removeCurrentSnackBar();
             Scaffold.of(context).showSnackBar(new SnackBar(
               content: new Text("${newItemUpdated.itemName} modificato con successo."), 
               duration: const Duration(seconds: 2),
